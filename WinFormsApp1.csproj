@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="outputBodies.txt" />
-    <None Remove="TextFile1.txt" />
+    <None Remove="bodies.txt" />
+    <None Remove="output.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="outputBodies.txt">
+    <Content Include="output.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TextFile1.txt">
+    <Content Include="bodies.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

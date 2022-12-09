@@ -10,60 +10,46 @@ namespace WinFormsApp1
     public partial class Form1 : Form
     {
         SimulatorUniverse universe = new SimulatorUniverse();
-        List<Body> matrix = new List<Body>();
+        List<Body> bodies = new List<Body>();
 
 
         public Form1()
         {
             InitializeComponent();
-
-
-
             this.Paint += Form1_Load;
         }
 
         async private void Form1_Load(object sender, EventArgs e)
         {
 
-            matrix = universe.ReadCelestialBodies();
+            bodies = universe.ReadBodies();
             List<string> output = new List<string>();
+            Graphics graph = this.CreateGraphics();
+            graph.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            Pen pen = new Pen(Color.Green, 10);
 
-
-            Graphics g = this.CreateGraphics();
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            Pen pen = new Pen(Color.Green, 6);
-
-            if (matrix.Count > 1)
+            if (bodies.Count > 1)
             {
-                for (int iteration = 0; iteration < 10000; iteration++)
+                for (int it = 0; it < 10000; it++)
                 {
-
-
-                    for (int i = 0; i < matrix.Count; ++i)
+                    for (int i = 0; i < bodies.Count; ++i)
                     {
-                        for (var j = i + 1; j < matrix.Count; ++j)
+                        for (var j = i + 1; j < bodies.Count; ++j)
                         {
-                            universe.GravitationalForceBodies(matrix[i], matrix[j]);
+                            universe.GravitationalForceBodies(bodies[i], bodies[j]);
                         }
 
-                        RectangleF rect = new RectangleF(new PointF((float)matrix[i].getPosX(), (float)matrix[i].getPosY()), new Size(Convert.ToInt32(matrix[i].getRadius()), (int)matrix[i].getRadius()));
-                        g.FillEllipse(Brushes.Yellow, rect);
-                        g.DrawEllipse(pen, rect);
+                        RectangleF rect = new RectangleF(new PointF((float)bodies[i].getPosX(), (float)bodies[i].getPosY()), new Size(Convert.ToInt32(bodies[i].getRadius()), (int)bodies[i].getRadius()));
+                        graph.FillEllipse(Brushes.Yellow, rect);
+                        graph.DrawEllipse(pen, rect);
                     }
+                    universe.InteractionForceBodies(bodies);
+                    output = universe.WriteIterationBodies(output, bodies);
+                    universe.InteractionColisionsBodies(bodies);
+                    universe.ForcesResets(bodies);
+                    await Task.Delay(1000);
 
-
-
-                    universe.InteractionForceBodies(matrix);
-
-                    output = universe.WriteIterationBodies(output, matrix);
-
-                    universe.InteractionColisionsBodies(matrix);
-
-                    universe.ForcesResets(matrix);
-
-                    await Task.Delay(100);
-
-                    g.Clear(SystemColors.Control);
+                    graph.Clear(SystemColors.Control);
                 }
             }
         }

@@ -7,17 +7,16 @@ class SimulatorUniverse : Universe
 {
     double G = 6.6740184 * Math.Pow(10, -11);
 
-    private int numberCelestialBodies;
-    private int numberIterations;
-
+    private int nBodies;
+    private int nIterations;
     private int time;
 
     public SimulatorUniverse() { }
 
-    public List<Body> ReadCelestialBodies()
+    public List<Body> ReadBodies()
     {
         List<Body> celestialBodies = new List<Body>();
-        string file = "TextFile1.txt";
+        string file = "bodies.txt";
 
         if (!File.Exists(file))
         {
@@ -27,18 +26,19 @@ class SimulatorUniverse : Universe
 
         string[] lines = File.ReadAllLines(file);
         int counter = 0;
+
         foreach (var line in lines)
         {
             if (counter == 0)
             {
                 string[] data = line.Split(";");
 
-                numberCelestialBodies = int.Parse(data[0]);
-                numberIterations = int.Parse(data[1]);
+                nBodies = int.Parse(data[0]);
+                nIterations = int.Parse(data[1]);
                 time = int.Parse(data[1]);
             }
 
-            if (counter > 0 && counter <= numberCelestialBodies)
+            if (counter > 0 && counter <= nBodies)
             {
                 Body newCelestialBody = new Body(line);
                 celestialBodies.Add(newCelestialBody);
@@ -52,11 +52,10 @@ class SimulatorUniverse : Universe
 
     public override void SaveOutputFile(List<string> output)
     {
-        string file = "outputBodies.txt";
+        string file = "output.txt";
 
         FileStream myFile = new FileStream(file, FileMode.Open, FileAccess.Write);
         StreamWriter sw = new StreamWriter(myFile, Encoding.UTF8);
-
 
         foreach (var item in output)
         {
@@ -69,27 +68,12 @@ class SimulatorUniverse : Universe
     }
 
 
-    public List<string> WriteIterationBodies(List<string> output, List<Body> bodies)
-    {
-        foreach (var body in bodies)
-        {
-            output.Add(body.formatOutputFile());
-        }
-
-        return output;
-    }
-
-
-    public double CalculateEuclidienneDistance(Body bodyA, Body bodyB)
-    {
-        return Math.Sqrt(Math.Pow((bodyA.getPosX() - bodyB.getPosX()), 2) + Math.Pow((bodyA.getPosY() - bodyB.getPosY()), 2));
-    }
 
 
     public override void GravitationalForceBodies(Body bodyA, Body bodyB)
     {
 
-        double r = CalculateEuclidienneDistance(bodyA, bodyB);
+        double r = CalculateDistance(bodyA, bodyB);
         double F = (G * bodyA.getMass() * bodyB.getMass()) / Math.Pow(r, 2);
 
         double rx = (bodyA.getPosX() - bodyB.getPosX());
@@ -111,19 +95,18 @@ class SimulatorUniverse : Universe
 
     public override void RenderColision(Body bodyA, Body bodyB)
     {
-        double distance = CalculateEuclidienneDistance(bodyA, bodyB);
+        double distance = CalculateDistance(bodyA, bodyB);
 
         if (distance < (bodyA.getRadius() + bodyB.getRadius()))
         {
             double body_1_Vx = bodyA.getVelX();
             double body_1_Vy = bodyA.getVelY();
-
             double body_2_Vx = bodyA.getVelX();
             double body_2_Vy = bodyA.getVelY();
 
+            // Realiza as colisões entre os bodies A e B
             bodyA.setVelX(body_2_Vx * (-1));
             bodyA.setVelY(body_2_Vy * (-1));
-
             bodyB.setVelX(body_1_Vx * (-1));
             bodyB.setVelY(body_1_Vy * (-1));
 
@@ -137,13 +120,12 @@ class SimulatorUniverse : Universe
     {
         double Ax = body.getFx() / body.getMass();
         double Ay = body.getFy() / body.getMass();
-
         double Vx = body.getVelX() + (Ax * time);
         double Vy = body.getVelY() + (Ay * time);
-
         double Sx = body.getPosX() + (body.getVelX() * time) + ((Ax / 2) * Math.Pow(time, 2));
         double Sy = body.getPosY() + (body.getVelY() * time) + ((Ay / 2) * Math.Pow(time, 2));
 
+        // Seta a posição X,Y e Velociade em X,Y do corpo
         body.setPosX(Sx);
         body.setPosY(Sy);
         body.setVelX(Vx);
@@ -183,19 +165,35 @@ class SimulatorUniverse : Universe
     }
 
 
+    public List<string> WriteIterationBodies(List<string> output, List<Body> bodies)
+    {
+        foreach (var body in bodies)
+        {
+            output.Add(body.formatOutputFile());
+        }
+
+        return output;
+    }
+
+
+    public double CalculateDistance(Body bodyA, Body bodyB)
+    {
+        return Math.Sqrt(Math.Pow((bodyA.getPosX() - bodyB.getPosX()), 2) + Math.Pow((bodyA.getPosY() - bodyB.getPosY()), 2));
+    }
+
+
     public override void RenderUniverse()
     {
-        List<Body> celestialBodies = ReadCelestialBodies();
+        List<Body> celestialBodies = ReadBodies();
         List<string> output = new List<string>();
 
-        output.Add(String.Format("{0};{1}", celestialBodies.Count, numberIterations));
+        output.Add(String.Format("{0};{1}", celestialBodies.Count, nIterations));
 
         if (celestialBodies.Count > 1)
         {
-            for (int iteration = 0; iteration < numberIterations; iteration++)
+            for (int iteration = 0; iteration < nIterations; iteration++)
             {
                 output.Add(String.Format("** Interacao {0} ************", iteration));
-                Console.WriteLine(String.Format("Iteração Nº {0}\n", iteration));
 
                 for (var i = 0; i < celestialBodies.Count; ++i)
                 {
@@ -203,20 +201,12 @@ class SimulatorUniverse : Universe
                     {
                         GravitationalForceBodies(celestialBodies[i], celestialBodies[j]);
                     }
-
-                    Console.WriteLine(celestialBodies[i].formatOutputFile());
-
                 }
 
                 InteractionForceBodies(celestialBodies);
-
                 output = WriteIterationBodies(output, celestialBodies);
-
                 InteractionColisionsBodies(celestialBodies);
-
                 ForcesResets(celestialBodies);
-
-                Console.WriteLine("\n\n");
 
             }
 
