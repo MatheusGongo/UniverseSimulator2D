@@ -45,10 +45,10 @@ class Body
     {
         return mass;
     }
-
+    
     public double getRadius()
     {
-        return 10;
+        return (radius / 4);
     }
 
     public double getPosX()
@@ -126,9 +126,5 @@ class Body
         return String.Format("{0};{1};{2};{3};{4};{5};{6}", name, mass, radius, posX, posY, velX, velY);
     }
 
-    public void print()
-    {
-        Console.WriteLine(string.Format("Posição X: {0}\nPosição Y: {1}\nMassa: {2}", posX, posY, mass));
-    }
 
 }

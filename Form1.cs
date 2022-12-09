@@ -12,8 +12,6 @@ namespace WinFormsApp1
         SimulatorUniverse universe = new SimulatorUniverse();
         List<Body> matrix = new List<Body>();
 
-        private List<Point> points = new List<Point>();
-
 
         public Form1()
         {
@@ -33,7 +31,7 @@ namespace WinFormsApp1
 
             Graphics g = this.CreateGraphics();
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            Pen pen = new Pen(Color.Blue, 3);
+            Pen pen = new Pen(Color.Green, 6);
 
             if (matrix.Count > 1)
             {
@@ -63,7 +61,7 @@ namespace WinFormsApp1
 
                     universe.ForcesResets(matrix);
 
-                    await Task.Delay(250);
+                    await Task.Delay(500);
 
                     g.Clear(SystemColors.Control);
                 }
