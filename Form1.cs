@@ -61,7 +61,7 @@ namespace WinFormsApp1
 
                     universe.ForcesResets(matrix);
 
-                    await Task.Delay(500);
+                    await Task.Delay(100);
 
                     g.Clear(SystemColors.Control);
                 }
